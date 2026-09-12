@@ -15,8 +15,8 @@ bullets = []
 enemies = []
 
 #create the ship
-ship = Actor('crossbow.png')
-ship.pos = (CENTER_X , CENTER_Y - 60)
+crossbow = Actor('crossbow.png')
+crossbow.pos = (CENTER_X , CENTER_Y - 60)
 
 #create the enemies
 for i in range(8):
@@ -32,16 +32,15 @@ def display_score():
 def on_key_down(key):
     if key == keys.SPACE:
         bullet = Actor('bullet.png')
-        bullet.x = ship.x
-        bullet.y = ship.y - 50
+        bullet.x = crossbow.x
+        bullet.y = crossbow.y - 50
         bullets.append(bullet)
 
-#function to draw game 
 def draw():
     if lives > 0:
         screen.clear()
         screen.fill('dark blue')
-        ship.draw()
+        crossbow.draw()
         for enemy in enemies:
             enemy.draw()
         for bullet in bullets:
@@ -49,5 +48,57 @@ def draw():
         display_score()
     else:
         game_over_screen()
+
+def update():
+    global score , lives
+    if keyboard.left :
+        crossbow.x -= speed 
+        if crossbow.x <= 0 :
+            crossbow.x = 0
+    elif keyboard.right:
+        crossbow.x += speed
+        if crossbow.x >= WIDTH:
+            crossbow.x = WIDTH
+    for bullet in bullets:
+        if bullet.y <= 0:
+            bullets.remove(bullet)
+        else:
+            bullet.y -= 10
+    for enemy in enemies:
+        enemy.y += 5
+        if enemy.y >= HEIGHT:
+            enemy.x = random.randint(0,WIDTH - 80)
+            enemy.y = random.randint(-100,0)
+        for bullet in bullets :
+            if enemy.colliderect(bullet):
+                score += 100
+                sounds.eep.play()
+                if bullet in bullets:
+                    bullets.remove(bullet)
+                if enemy in enemies:
+                    enemies.remove(enemy)
+                break
+        if enemy.colliderect(crossbow):
+            lives -= 1
+            if enemy in enemies:
+                enemies.remove(enemy)
+            if lives == 0:
+                game_over()
+    if len(enemies)  < 8:
+         enemy = Actor('evil_dragon.png')
+         enemy.x = random.randint(0,WIDTH - 80)
+         enemy.y = random.randint(-100, 0)
+         enemies.append(enemy)
+
+def game_over():
+    global is_game_over
+    is_game_over = True
+
+def game_over_screen():
+    screen.clear()
+    screen.fill('#D90429')
+    screen.draw.text(f'Game Over!!!',(CENTER_X - 150, CENTER_Y))
+    screen.draw.text(f'Score : {score}',(CENTER_X - 150, CENTER_Y + 25))
+
 
 pgzrun.go()
